@@ -4,6 +4,7 @@ from Classes.tasks import send_email_task
 def schedule_jobs():
     conn = get_connection()
     cursor = conn.cursor()
+    
     cursor.execute("SELECT user_id, name, email FROM [dbo].[users] WHERE is_active = 0")
 
     for user_id, name, email in cursor.fetchall():
