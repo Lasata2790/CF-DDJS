@@ -3,10 +3,6 @@ import json
 
 SERVER = "localhost\\SQLEXPRESS"
 DATABASE = "DJSS"
-# USERNAME = "lasul"
-# PASSWORD = "4837"
-
-
 
 def get_connection():
     conn = pyodbc.connect(
@@ -17,7 +13,7 @@ def get_connection():
 
 def log_job(job_type, payload, priority=5, max_retries=3):
     
-    user_id= '6E3A8F24-8F42-4D2F-BB03-39B42A27F341'
+    user_id= '6E3A8F24-8F42-4D2F-BB03-39B42A27F341'     # will be dynamic later
     status = 'queued'
     attempts_done = 1
     conn = get_connection()
