@@ -6,7 +6,7 @@ The codebase is designed to illustrate the overall architecture and workflow, ra
 The Design and architecture folder contains high-level diagrams and flowcharts illustrating the system’s architecture, queue design and retry logic. It also includes the queue pseudocode and implementations for further uses.
 
 
-- LM
+-- LM
 
 
 
