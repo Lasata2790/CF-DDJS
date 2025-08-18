@@ -19,18 +19,36 @@ app = Celery(
 dead_letter_file = "dead_letter.log"
 
 @app.task(bind=True, max_retries=None)
-def send_email_task(self, job_id, payload, max_retries=3):
+def execute_job_task(self, job_id, job_type, payload, max_retries=3):
     attempt_no = self.request.retries + 1
     try:
-        print(f"[Attempt {attempt_no}] Sending email to {payload['email']}...")
+        print(f"[Attempt {attempt_no}] Executing {job_type} for payload: {payload}")
         time.sleep(1)
-        if payload['email'].endswith("example.com"):
-            raise Exception("Simulated email failure")
-        print(f" Email sent to {payload['email']}")
+
+        if job_type == "send_email":
+            if payload.get("email", "").endswith("example.com"):
+                raise Exception("Simulated email failure")
+            print(f" Email sent to {payload['email']}")
+
+        elif job_type == "export_data":
+            if random.random() < 0.2:
+                raise Exception("Data export failed")
+            print(f" Data exported for user {payload['user_id']}")
+
+        elif job_type == "process_payment":
+            if random.random() < 0.2:
+                raise Exception("Payment processing failed")
+            print(f" Payment processed for user {payload['user_id']}")
+
+        else:
+            raise Exception(f"Unknown job type: {job_type}")
+
         log_attempt(job_id, attempt_no, "succeeded")
         update_job_status(job_id, "succeeded", attempt_no)
+
     except Exception as exc:
         log_attempt(job_id, attempt_no, "failed", str(exc))
+
         if attempt_no >= max_retries:
             update_job_status(job_id, "failed", attempt_no)
             send_to_dead_letter(job_id, payload, reason=str(exc))

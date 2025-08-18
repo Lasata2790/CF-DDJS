@@ -1,0 +1,10 @@
+In the current implementation, retry attempts for failed jobs are fixed in the code. To make this feature more flexible and adaptable to different job requirements, the retry count is to be made configurable. There are several possible approaches for achieving this:
+
+1. Configuration File: The maximum number of retries for a job can be stored in a configuration file (e.g., JSON, or YAML). The system reads this value at runtime, allowing administrators to adjust retry limits without modifying the main code.
+
+2. Database Setting: Each job could include a max_retries field in the database. This would allow different job types or even individual jobs to have custom retry limits. Workers can read this field when processing the job to decide whether to retry or move the job to a dead-letter queue.
+
+3. User Interface or Prompt: The retry limit could be exposed directly to system users via a UI or a prompt. When creating or scheduling a job, the user can specify the number of retry attempts based on the criticality or nature of the job. This approach makes the system more user-friendly and flexible without requiring coding changes.
+
+
+User login and tracking - Another addition necessary is implementing login and authentication mechanisms. This would enhance system security and accountability. Tracking which user created, modified, or executed jobs would allow better auditing, provide detailed usage information, and ensure that sensitive tasks are performed only by authorized personnel.
