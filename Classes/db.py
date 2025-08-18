@@ -13,7 +13,7 @@ def get_connection():
 
 def log_job(job_type, payload, priority=5, max_retries=3):
     
-    user_id= '6E3A8F24-8F42-4D2F-BB03-39B42A27F341'     # will be dynamic later
+    user_id= '6E3A8F24-8F42-4D2F-BB03-39B42A27F341'     # will be dynamic later / user that is logged in.
     status = 'queued'
     attempts_done = 1
     conn = get_connection()
@@ -48,3 +48,14 @@ def update_job_status(job_id, status, attempts_done):
     )
     conn.commit()
     conn.close()
+
+def log_to_dlq(self, job_id, payload, reason=None):
+    conn = self.get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO dead_letter_jobs (job_id, payload, reason) VALUES (?, ?, ?)",
+        (job_id, json.dumps(payload), reason)
+    )
+    conn.commit()
+    conn.close()
+

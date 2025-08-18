@@ -15,5 +15,12 @@ class Job:
 def push_job(job: Job):
     job_queue.put((job.priority, job))
 
-def pop_job():
-    return job_queue.get()
+
+def pop_job(self):
+        if not self.priority_queue.empty():
+            return self.priority_queue.get()[1]  # Job object
+        return None
+
+def send_to_dlq(self, job: Job):
+        self.dlq.put(job)
+        print(f"Moved to Dead Letter Queue: {job.payload}")

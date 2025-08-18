@@ -1,5 +1,5 @@
 from celery import Celery
-from .db import log_attempt, update_job_status
+from .db import log_attempt, update_job_status, log_to_dlq
 import time
 import random
 import json
@@ -23,7 +23,7 @@ def send_email_task(self, job_id, payload, max_retries=3):
     attempt_no = self.request.retries + 1
     try:
         print(f"[Attempt {attempt_no}] Sending email to {payload['email']}...")
-        time.sleep(1)  # simulate email sending
+        time.sleep(1)
         if payload['email'].endswith("example.com"):
             raise Exception("Simulated email failure")
         print(f" Email sent to {payload['email']}")
@@ -33,12 +33,15 @@ def send_email_task(self, job_id, payload, max_retries=3):
         log_attempt(job_id, attempt_no, "failed", str(exc))
         if attempt_no >= max_retries:
             update_job_status(job_id, "failed", attempt_no)
-            send_to_dead_letter(job_id, payload)
+            send_to_dead_letter(job_id, payload, reason=str(exc))
         else:
             update_job_status(job_id, "queued", attempt_no)
             raise self.retry(exc=exc, countdown=5)
 
-def send_to_dead_letter(job_id, payload):
+
+def send_to_dead_letter(job_id, payload, reason =None):
     with open(dead_letter_file, "a") as f:
         f.write(f"Job ID {job_id}: {json.dumps(payload)}\n")
+    log_to_dlq(job_id, payload, reason)
     print(f" Moved to dead-letter queue: {payload['email']}")
+

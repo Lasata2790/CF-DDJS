@@ -1,0 +1,54 @@
+# Pseudocode for Distributed Job Queue with Priority + DLQ
+
+# Constants
+MAX_RETRIES = 3 #is user defined
+PRIORITY_LEVELS = ["HIGH", "MEDIUM", "LOW"]
+
+# Queues
+priority_queues = {
+    "HIGH": Queue(),
+    "MEDIUM": Queue(),
+    "LOW": Queue()
+}
+dead_letter_queue = Queue()
+
+# Worker loop
+while True:
+    job = None
+    
+    # Always check queues in order of priority
+    for priority in PRIORITY_LEVELS:
+        if not priority_queues[priority].empty():
+            job = priority_queues[priority].get()
+            break   # stop searching once a job is found
+    
+    # If no jobs in any queue, wait and try again
+    if job is None:
+        sleep(1)
+        continue
+    
+    # Process the job
+    try:
+        process_job(job)   # e.g., send email, export data, etc.
+        log("Job succeeded:", job.id)
+    
+    except Exception as e:
+        job.retry_count += 1
+        if job.retry_count <= MAX_RETRIES:
+            log("Job {job.id} failed. Retrying {job.retry_count}/{MAX_RETRIES}")
+            priority_queues[job.priority].put(job)   # requeue in same priority
+        else:
+            log("Job {job.id} permanently failed. Moving to DLQ.")
+            dead_letter_queue.put(job)
+
+
+
+
+
+
+
+
+
+
+
+
